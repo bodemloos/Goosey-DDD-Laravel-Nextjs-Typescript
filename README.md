@@ -91,13 +91,14 @@ make down
 ### 4. Roles & Permission: <a name="roles"></a>
 ##### Laravel-Permission package "Spatie" to handle roles and permissions in Laravel.
    - added 2 roles:
-		- admin
-       - user
+	- admin
+       	- user
 
 ##### Observer pattern to give a new user the default 'user' role
 
 ### 5. Deployment on Google Cloud Platform:<a name="policy"></a>
 - Google Cloud Engine:
-- VM instance on Google Compute Engine serve my app.
- - Thanks to docker it only takes a few minutes to create this instance for the first time.
+	- VM instance on GGE.
+
+#### Thanks to docker it only takes a few minutes to create this instance for the first time.
   
