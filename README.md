@@ -35,7 +35,7 @@ make down
    
 
 ## Tech stack:<a name="tech"></a>
- ### Everything runs on the latest stable versions of PHP, MYSQL (MariaBD), Nodejs, Nginx & React (2023-04-01):
+ ### Everything runs on the latest stable version (2023-04-01):
 #### 2.1 Server stack:<a name="server"></a>
 ##### PHP version 8.2   
  - released on 06 Dec 2022
