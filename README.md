@@ -1,2 +1,2 @@
-# Loosey My Goosey
-Domain Driven Design Pattern with Typescript
+# goosey.ontheloose.io
+### Domain Driven Design - NextJs - Laravel - TypeScript
