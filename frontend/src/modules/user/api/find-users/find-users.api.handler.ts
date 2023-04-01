@@ -2,7 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Ok, Result } from 'oxide.ts';
 import { PaginatedParams, PaginatedQueryBase } from '@libs/ddd/query.base';
 import { Paginated } from '@src/libs/ddd';
-import { UserModel, userSchema } from '../../database/user.repository';
+import { UserModel } from '../../database/user.repository';
 
 export class FindUsersApi extends PaginatedQueryBase {
   readonly country?: string;
