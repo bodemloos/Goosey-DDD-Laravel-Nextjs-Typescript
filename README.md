@@ -1,4 +1,4 @@
-# nextjs.ontheloose.io
+# nestjs.ontheloose.io
 ### Domain Driven Design - NextJs - Laravel - TypeScript
 
 1. [Installation](#installation)
