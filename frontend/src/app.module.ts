@@ -1,41 +1,44 @@
 import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { UserModule } from '@modules/user/user.module';
-import { WalletModule } from '@modules/wallet/wallet.module';
-import { RequestContextModule } from 'nestjs-request-context';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ContextInterceptor } from './libs/application/context/ContextInterceptor';
-import { ExceptionInterceptor } from '@libs/application/interceptors/exception.interceptor';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
+import path from 'path';
 
-const interceptors = [
-  {
-    provide: APP_INTERCEPTOR,
-    useClass: ContextInterceptor,
-  },
-  {
-    provide: APP_INTERCEPTOR,
-    useClass: ExceptionInterceptor,
-  },
-];
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { ApiConfigService } from './shared/services/api-config.service';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
-    EventEmitterModule.forRoot(),
-    RequestContextModule,
-    CqrsModule,
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: true,
-    }),
-
-    // Modules
+    AuthModule,
     UserModule,
-    WalletModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [SharedModule],
+      useFactory: (configService: ApiConfigService) =>
+        configService.postgresConfig,
+      inject: [ApiConfigService],
+    }),
+    I18nModule.forRootAsync({
+      useFactory: (configService: ApiConfigService) => ({
+        fallbackLanguage: configService.fallbackLanguage,
+        loaderOptions: {
+          path: path.join(__dirname, '/i18n/'),
+          watch: configService.isDevelopment,
+        },
+        resolvers: [
+          { use: QueryResolver, options: ['lang'] },
+          AcceptLanguageResolver,
+        ],
+      }),
+      imports: [SharedModule],
+      inject: [ApiConfigService],
+    }),
   ],
-  controllers: [],
-  providers: [...interceptors],
+  providers: [],
 })
 export class AppModule {}

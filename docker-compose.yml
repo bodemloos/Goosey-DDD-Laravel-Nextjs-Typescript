@@ -20,6 +20,7 @@ services:
     environment:
       PORT: ${FRONTEND_PORT}
       HOST: '0.0.0.0'
+      API_ENDPOINT: 'http://0.0.0.0:9000'
     expose:
       - ${FRONTEND_PORT}
     volumes:
@@ -47,11 +48,6 @@ services:
       SANCTUM_STATEFUL_DOMAINS: 'localhost'
       SESSION_DRIVER: 'cookie'
       JWT_SECRET: ${JWT_SECRET}
-      NOTIFY_PUBLIC: ${NOTIFY_PUBLIC}
-      NOTIFY_SECRET: ${NOTIFY_SECRET}
-      NOTIFY_URL: 'https://api.notify.eu/notification/send'
-      NOTIFY_NOTIFICATION: ${NOTIFY_NOTIFICATION}
-      NOTIFY_TRANSPORT: ${NOTIFY_TRANSPORT}
     volumes:
       - ./api:/app
     expose:

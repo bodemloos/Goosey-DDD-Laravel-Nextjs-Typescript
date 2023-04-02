@@ -1,76 +1,52 @@
-import { User } from '@prisma/client';
-import { TRPCError } from '@trpc/server';
-import { SignInDto, SignUpDto } from './auth.dtos';
-import { sign } from 'jsonwebtoken';
-import { authConfig } from '../../configs/auth.config';
-import { hash, compare } from 'bcryptjs';
-import { Context } from '../../server/context';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
-type UserResponse = Omit<User, 'password'>;
-type SignUpResult = UserResponse & { accessToken: string };
+import { validateHash } from '../../common/utils';
+import type { RoleType } from '../../constants';
+import { TokenType } from '../../constants';
+import { UserNotFoundException } from '../../exceptions';
+import type { UserEntity } from '../user/user.entity';
+import { TokenPayloadDto } from './dto/TokenPayloadDto';
+import type { UserLoginDto } from './dto/UserLoginDto';
+import { HttpService } from '@nestjs/axios';
 
-export const signUp = async (
-  input: SignUpDto,
-  ctx: Context,
-): Promise<UserResponse> => {
-  const bcryptHash = await hash(input.password, 10);
+// import { config } from '@src/config/api';
 
-  const user = await ctx.prisma.user.create({
-    data: {
-      email: input.email,
-      password: bcryptHash,
-      role: 'user',
-    },
-  });
-  return {
-    id: user.id,
-    email: user.email,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    role: user.role,
-  };
-};
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-export const signIn = async (
-  input: SignInDto,
-  ctx: Context,
-): Promise<SignUpResult> => {
-  const user = await ctx.prisma.user.findUnique({
-    where: {
-      email: input.email,
-    },
-  });
+  // async validateUser(userLoginDto: UserLoginDto): Promise<UserEntity> {
+  //   const user = await this.userService.findOne({
+  //     email: userLoginDto.email,
+  //   });
 
-  const error = new TRPCError({
-    message: 'Incorrect email or password',
-    code: 'UNAUTHORIZED',
-  });
+  //   const isPasswordValid = await validateHash(
+  //     userLoginDto.password,
+  //     user?.password,
+  //   );
 
-  if (!user) {
-    throw error;
+  //   if (!isPasswordValid) {
+  //     throw new UserNotFoundException();
+  //   }
+
+  //   return user;
+  // }
+
+  async createAccessToken(data: {
+    role: RoleType;
+    userId: number;
+  }): Promise<TokenPayloadDto> {
+    return new TokenPayloadDto({
+      expiresIn: this.configService.authConfig.jwtExpirationTime,
+      accessToken: await this.jwtService.signAsync({
+        userId: data.userId,
+        type: TokenType.ACCESS_TOKEN,
+        role: data.role,
+      }),
+    });
   }
-
-  const result = await compare(input.password, user.password);
-
-  if (!result) {
-    throw error;
-  }
-
-  const token = sign(
-    {
-      id: user.id,
-      roles: user.role,
-    },
-    authConfig.secretKey,
-    { expiresIn: authConfig.jwtExpiresIn },
-  );
-
-  return {
-    id: user.id,
-    email: user.email,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    role: user.role,
-    accessToken: token,
-  };
-};
+}
